@@ -7,10 +7,137 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Product {
-  id       Int     @id @default(autoincrement())
-  name     String
-  quantity Int
-  price    Decimal
-  active   Boolean
+model Categories {
+  Id                 Int                  @id(map: "PK_Categories") @default(autoincrement())
+  Name               String
+  CreatedAt          DateTime             @default(dbgenerated("'-infinity'::timestamp with time zone")) @db.Timestamptz(6)
+  UpdatedAt          DateTime             @default(dbgenerated("'-infinity'::timestamp with time zone")) @db.Timestamptz(6)
+  StoreId            Int                  @default(0)
+  Store              Store                @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Categories_Store_StoreId")
+  ProductsCategories ProductsCategories[]
+
+  @@index([StoreId], map: "IX_Categories_StoreId")
+}
+
+model Clients {
+  Id        Int      @id(map: "PK_Clients") @default(autoincrement())
+  Name      String
+  Email     String
+  Password  String
+  IsActive  Boolean
+  CreatedAt DateTime @db.Timestamptz(6)
+  UpdatedAt DateTime @db.Timestamptz(6)
+  StoreId   Int
+  Store     Store    @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Clients_Store_StoreId")
+  Orders    Orders[]
+
+  @@index([StoreId], map: "IX_Clients_StoreId")
+}
+
+model OrderProductsHistory {
+  Id       Int     @id(map: "PK_OrderProductsHistory") @default(autoincrement())
+  Name     String?
+  Quantity Int
+  Price    Decimal @db.Decimal
+  OrderId  Int
+  Orders   Orders  @relation(fields: [OrderId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_OrderProductsHistory_Orders_OrderId")
+
+  @@index([OrderId], map: "IX_OrderProductsHistory_OrderId")
+}
+
+model Orders {
+  Id                   Int                    @id(map: "PK_Orders") @default(autoincrement())
+  IsDraft              Boolean
+  CreatedAt            DateTime               @db.Timestamptz(6)
+  UpdatedAt            DateTime               @db.Timestamptz(6)
+  StoreId              Int
+  ClientId             Int
+  UserId               Int
+  PaymentMethodId      Int
+  OrderProductsHistory OrderProductsHistory[]
+  Clients              Clients                @relation(fields: [ClientId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Orders_Clients_ClientId")
+  PaymentMethods       PaymentMethods         @relation(fields: [PaymentMethodId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Orders_PaymentMethods_PaymentMethodId")
+  Store                Store                  @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Orders_Store_StoreId")
+  Users                Users                  @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Orders_Users_UserId")
+
+  @@index([ClientId], map: "IX_Orders_ClientId")
+  @@index([PaymentMethodId], map: "IX_Orders_PaymentMethodId")
+  @@index([StoreId], map: "IX_Orders_StoreId")
+  @@index([UserId], map: "IX_Orders_UserId")
+}
+
+model PaymentMethods {
+  Id        Int      @id(map: "PK_PaymentMethods") @default(autoincrement())
+  Name      String
+  Tax       Int
+  IsActive  Boolean
+  CreatedAt DateTime @db.Timestamptz(6)
+  UpdatedAt DateTime @db.Timestamptz(6)
+  StoreId   Int
+  Orders    Orders[]
+  Store     Store    @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_PaymentMethods_Store_StoreId")
+
+  @@index([StoreId], map: "IX_PaymentMethods_StoreId")
+}
+
+model Products {
+  Id                 Int                  @id(map: "PK_Products") @default(autoincrement())
+  Name               String?
+  Quantity           Int
+  Price              Decimal              @db.Decimal
+  Active             Boolean
+  CreatedAt          DateTime             @default(dbgenerated("'-infinity'::timestamp with time zone")) @db.Timestamptz(6)
+  UpdatedAt          DateTime             @default(dbgenerated("'-infinity'::timestamp with time zone")) @db.Timestamptz(6)
+  StoreId            Int                  @default(0)
+  Store              Store                @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Products_Store_StoreId")
+  ProductsCategories ProductsCategories[]
+
+  @@index([StoreId], map: "IX_Products_StoreId")
+}
+
+model ProductsCategories {
+  CategoryId Int
+  ProductId  Int
+  Categories Categories @relation(fields: [CategoryId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ProductsCategories_Categories_CategoryId")
+  Products   Products   @relation(fields: [ProductId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ProductsCategories_Products_ProductId")
+
+  @@id([CategoryId, ProductId], map: "PK_ProductsCategories")
+  @@index([ProductId], map: "IX_ProductsCategories_ProductId")
+}
+
+model Store {
+  Id             Int              @id(map: "PK_Store") @default(autoincrement())
+  Name           String
+  Cnpj           String
+  IsActive       Boolean
+  CreatedAt      DateTime         @db.Timestamptz(6)
+  UpdatedAt      DateTime         @db.Timestamptz(6)
+  Categories     Categories[]
+  Clients        Clients[]
+  Orders         Orders[]
+  PaymentMethods PaymentMethods[]
+  Products       Products[]
+  Users          Users[]
+}
+
+model Users {
+  Id        Int      @id(map: "PK_Users") @default(autoincrement())
+  Name      String
+  Email     String
+  Password  String
+  IsActive  Boolean
+  CreatedAt DateTime @db.Timestamptz(6)
+  UpdatedAt DateTime @db.Timestamptz(6)
+  StoreId   Int
+  Orders    Orders[]
+  Store     Store    @relation(fields: [StoreId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Users_Store_StoreId")
+
+  @@index([StoreId], map: "IX_Users_StoreId")
+}
+
+model EFMigrationsHistory {
+  MigrationId    String @id(map: "PK___EFMigrationsHistory") @db.VarChar(150)
+  ProductVersion String @db.VarChar(32)
+
+  @@map("__EFMigrationsHistory")
 }

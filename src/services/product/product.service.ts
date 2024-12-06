@@ -6,47 +6,47 @@ import { createProductDTO, updateProductDTO } from 'src/interfaces/Iproduct';
 export class ProductService {
     
     async getProduct(productId: number) {
-        return await prisma.product.findUnique({
+        return await prisma.products.findUnique({
             where: {
-                id: productId
+                Id: productId
             }
         })
     }
     
     async getAllProducts() {
-        return await prisma.product.findMany()
+        return await prisma.products.findMany()
     }
     
-    async saveProduct(product: createProductDTO) {
-        return await prisma.product.create({
-            data: { ...product }
+    async saveProduct(products: createProductDTO) {
+        return await prisma.products.create({
+            data: { ...products }
         })
     }
     
     async deleteProduct(productId: number) {
-        return await prisma.product.delete({
+        return await prisma.products.delete({
             where:{
-                id: productId
+                Id: productId
             }
         })
     }
     
-    async updateProduct(product: updateProductDTO) {
-        return await prisma.product.update({
+    async updateProduct(products: updateProductDTO) {
+        return await prisma.products.update({
             where:{
-                id: product.id
+                Id: products.id
             },
-            data: {...product}
+            data: {...products}
         })
     }
 
     async switchStatusProduct(productId: number, productStatus: boolean) {
-        return await prisma.product.update({
+        return await prisma.products.update({
             where:{
-                id: productId
+                Id: productId
             },
             data: {
-                active: productStatus
+                Active: productStatus
             }
         })
     }

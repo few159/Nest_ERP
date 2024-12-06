@@ -1,9 +1,9 @@
-import { Product } from "@prisma/client"
+import { Products } from "@prisma/client"
 
-export interface createProductDTO extends Omit<Product, 'id'| 'price'>{
+export interface createProductDTO extends Omit<Products, 'id'| 'price'>{
     price: number
 }
 
-export interface updateProductDTO extends Partial<Product>{
+export interface updateProductDTO extends Partial<Products>{
     id: number
 }
